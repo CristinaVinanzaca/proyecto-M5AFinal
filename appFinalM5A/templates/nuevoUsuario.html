@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block body %}
+    <form>
+    <div class="container text-center">
+        <h1>{{ titulo }}</h1>
+        <div class="form-group" class="col-sm-2 col-form-label">
+            <div class="container text-left">
+                <label for="codigo">Nombre:</label></div>
+            <input type="text" class="form-control" placeholder="codigo" id="nombre">
+            <div class="container text-left">
+                <label for="descripcion">Correo:</label></div>
+            <input type="email" class="form-control" id="correo">
+            <div class="container text-left">
+                <label for="descripcion">Contraseña:</label></div>
+            <input type="password" class="form-control" id="contraseña">
+            <div style="text-align: center;"><button type="submit" class="btn btn-primary" id="guardar" >Registrar</button></div>
+        </div>
+    </div>
+    </form>
+    <script>
+    const boton=document.getElementById('guardar');
+    const nameUser=document.getElementById('nombre');
+    const correo=document.getElementById('correo');
+    const contra=document.getElementById('contraseña');
+    boton.addEventListener('click',() =>{
+         fetch('http://127.0.0.1:8000/api/v1/Usuario/', {
+        method: 'POST',
+        body:JSON.stringify({
+            idUsuario:'82',
+            nombreUsuario:nameUser.value,
+            claveUsuario:contra.value,
+            correoUsuario:correo.value
+        }),
+        headers:{
+            'Content-Type':'application/json'
+        }
+        })
+        window.location.href='http://127.0.0.1:8000/usuarios'
+
+
+
+    })
+
+    </script>
+{% endblock %}

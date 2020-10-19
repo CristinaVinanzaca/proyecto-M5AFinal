@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<div class="container text-center">
+<h1>{{ titulo }}</h1>
+<div class="row justify-content-center">
+    <div class="container text-right">
+     <a type="button" class="btn btn-primary" href={% url 'create_vehiculo' %}>Ingresar nuevo</a>
+    </div>
+
+    <div class="col-12">
+        <table class="table table-bordered table-striped table-hover table-sm table-secondary">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Número de Placa</th>
+                    <th>Propietario</th>
+                    <th>Hora entrada</th>
+                    <th>Hora Salida</th>
+                    <th>Tipo de vehiculo</th>
+                    <th>Plaza Uusada</th>
+                    <th>Valor a pagar</th>
+                    <th>Registro de Salida</th>
+                    <th>Acciones</th>
+
+
+
+
+
+                </tr>
+                </thead>
+                <tbody id="tbody-vehiculos">
+
+
+                <!--template tags que usa django... el profesor1 es el mismo que utilizamos en el view-->
+                </tbody>
+
+
+        </table>
+
+    </div>
+</div>
+</div>
+<script>
+
+function eliminar(id) {
+console.log('id eliminar',id)
+    fetch(`http://127.0.0.1:8000/api/v1/Vehiculo/${id}/`)
+    .then(res=>res.json())
+    .then(data=>{
+        fetch(`http://127.0.0.1:8000/api/v1/Vehiculo/${id}/`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                idPlacaVehiculo: data.idPlacaVehiculo,
+                idPropietario: data.idPropietario,
+                horaSalida: data.horaSalida,
+                tipoVehiculo: data.tipoVehiculo,
+                plazaUsada: data.plazaUsada,
+                facturada: data.facturada,
+                activo: 'false'
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res=>{
+            if(res.ok){
+                window.location.reload()
+            }
+        })
+
+    })
+
+}
+function facturar(event) {
+ //console.log('EVENT...',event)
+   // http://127.0.0.1:8000/api/v1/Vehiculo/
+    fetch(`http://127.0.0.1:8000/api/v1/Vehiculo/${event}/`)
+    .then(res=>res.json())
+    .then(data=>{
+        console.log('data de facturar: ',data)
+        var fechahoraDeIngreso=new Date (data.horaEntrada)
+        var horaDeIngreso=fechahoraDeIngreso.getTime()
+        var Salida=new Date()
+        var fechaHoraDeSalida=Salida.toISOString()
+        var TotalApagar
+      if (data.facturada == true){
+            window.alert('Este vehículo ya fue facturado')
+          var cadena='http://127.0.0.1:8000/api/v1/Ticket/';
+                fetch(cadena).then(res=>res.json()).then(ticket => {
+                    console.log('DATAAAAAAA: ',ticket)
+                    ticket.forEach((ticket1,index)=>{
+                        console.log('ticketeeeeee   ',ticket1.vehiculo)
+                        if(ticket1.vehiculo ==data.id) {
+                            console.log(ticket1.id)
+                            window.location.href=`http://127.0.0.1:8000/ticket/${ticket1.id}`
+
+                        }
+                    })
+                })
+
+       }else {
+
+            fetch(`http://127.0.0.1:8000/api/v1/Vehiculo/${event}/`, {
+                method: 'PUT',
+                body: JSON.stringify({
+
+                    idPlacaVehiculo: data.idPlacaVehiculo,
+                    idPropietario: data.idPropietario,
+                    horaSalida: fechaHoraDeSalida,
+                    tipoVehiculo: data.tipoVehiculo,
+                    plazaUsada: data.plazaUsada,
+                    facturada: 'true'
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(res => {
+                if (res.ok) {
+                    fetch(`http://127.0.0.1:8000/api/v1/Vehiculo/${data.id}/`).then(res=>res.json()).then(data=>{
+
+                        var tarifaAutomovil=0.07;
+                        var motocicleta=0.05;
+                        var horaSalida1=new Date(data.horaSalida)
+                        var horaEntrada1=new Date(data.horaEntrada)
+
+
+
+                        console.log('tipo de vehiculo',data.tipoVehiculo)
+                        console.log('hora salida ',data.horaSalida)
+                        if(data.tipoVehiculo==1){
+                            TotalApagar=(((horaSalida1-horaEntrada1)/60000)*tarifaAutomovil)
+                            TotalApagar=TotalApagar.toFixed(2)
+                            console.log( 'valor a pagar ',TotalApagar)
+                        }else if (data.tipoVehiculo==2){
+                            TotalApagar=(((horaSalida1-horaEntrada1)/60000)*motocicleta)
+                            TotalApagar=TotalApagar.toFixed(2)
+                            console.log( 'valor a pagar ',TotalApagar)
+
+                        }
+                        console.log('PLAZA',data.plazaUsada,TotalApagar)
+                        var tpagar=TotalApagar.toString()
+                        console.log('tpagar   ',tpagar)
+                        fetch('http://127.0.0.1:8000/api/v1/Ticket/', {
+                            method: 'POST',
+                            body:JSON.stringify({
+                                valorPagar:tpagar,
+                                vehiculo:data.id
+                            }),
+                            headers:{
+                                'Content-Type':'application/json'
+
+                            }
+                        })
+
+                        fetch(`http://127.0.0.1:8000/api/v1/plazas/${data.plazaUsada}/`,{
+                            method:'GET'
+                        })
+                            .then(res => {
+                                console.log(res)
+                                return res.json()
+                            }).then(data1=>{
+                            console.log('DATA ',data1)
+                            fetch(`http://127.0.0.1:8000/api/v1/plazas/${data.plazaUsada}/`,{
+                                method:'PUT',
+                                body:JSON.stringify({
+                                    codigoPlaza:data1.codigoPlaza,
+                                    descripcionPlaza:data1.descripcionPlaza,
+                                    estadoPlaza:'true',
+                                    activo:'true'
+                                }),
+                                headers:{
+                                    'Content-Type':'application/json'
+                                }
+                            })
+                        })
+                         window.alert('facturación exitosa')
+                        window.location.reload()
+
+
+                })
+
+                }
+                })
+      }
+    })
+   /* var hoy=new Date();
+    var hora=hoy.toISOString();
+    var horsAnterior=new Date ('Sat Apr 18 2020 18:08:19 GMT-0500 (hora de verano central)');
+    console.log(horsAnterior)
+    console.log(hoy.toLocaleTimeString());
+    console.log((horsAnterior.getTime()-hoy.getTime())/60000);
+    console.log(consumidorFinal.value);*/
+}
+
+   console.log('holaMundo')
+   fetch('http://127.0.0.1:8000/api/v1/Vehiculo/')
+    .then(res=>res.json())
+    .then(data=>{
+        console.log('data: ', data)
+        const tbody=document.getElementById("tbody-vehiculos")
+        var idticket
+        data.forEach((vehiculo1,index) =>{
+            if (vehiculo1.activo == true) {
+                console.log('index: ', index)
+                const row = tbody.insertRow()
+                const No = row.insertCell(0);
+                const placa = row.insertCell(1)
+                const propietario = row.insertCell(2);
+                const h_entrada = row.insertCell(3);
+                const h_salida = row.insertCell(4);
+                const tipo_vehi = row.insertCell(5);
+                const plaza = row.insertCell(6);
+                const valoraPagar=row.insertCell(7)
+                const facturar=row.insertCell(8);
+                const acciones=row.insertCell(9);
+
+                No.innerHTML = index + 1;
+                placa.innerHTML = vehiculo1.idPlacaVehiculo;
+
+                fetch(`http://127.0.0.1:8000/api/v1/Cliente/${vehiculo1.idPropietario}/`).then(res=>res.json()).then(cliente => {
+                    console.log('DATAAAAAAA: ',cliente)
+                    propietario.innerHTML =cliente.nombreCompleto;
+
+                })
+                h_entrada.innerHTML= 'Fecha:';
+                h_entrada.innerHTML += new Date(vehiculo1.horaEntrada).toLocaleDateString();
+                h_entrada.innerHTML +=`<br>`;
+                h_entrada.innerHTML+= '  Hora: ';
+                h_entrada.innerHTML += new Date(vehiculo1.horaEntrada).toLocaleTimeString();
+                if (vehiculo1.horaSalida == null){
+                   h_salida.innerHTML = 'Vehiculo dentro del lugar';
+                }
+                else{
+                    h_salida.innerHTML= 'Fecha:';
+                 h_salida.innerHTML += new Date(vehiculo1.horaSalida).toLocaleDateString();
+                 h_salida.innerHTML += `<br>`;
+                 h_salida.innerHTML+= '  Hora: ';
+                 h_salida.innerHTML += new Date(vehiculo1.horaSalida).toLocaleTimeString();
+                }
+
+                fetch(`http://127.0.0.1:8000/api/v1/TipoVehi/${vehiculo1.tipoVehiculo}/`).then(res=>res.json()).then(tVehiculo => {
+                    console.log('DATAAAAAAA: ',tVehiculo)
+                    tipo_vehi.innerHTML = tVehiculo.descripcion;
+
+                })
+
+
+                fetch(`http://127.0.0.1:8000/api/v1/plazas/${vehiculo1.plazaUsada}/`).then(res=>res.json()).then(plaza1 => {
+                    console.log('DATAAAAAAA plaza : ',plaza1)
+                    plaza.innerHTML = plaza1.descripcionPlaza;
+
+                })
+                var cadena='http://127.0.0.1:8000/api/v1/Ticket/';
+                fetch(cadena).then(res=>res.json()).then(ticket => {
+                    console.log('DATAAAAAAA: ',ticket)
+                    ticket.forEach((ticket1,index)=>{
+                        console.log('ticketeeeeee   ',ticket1.vehiculo)
+                        idticket=ticket1.id
+                        console.log('id ticket',idticket)
+                        if(ticket1.vehiculo ==vehiculo1.id) {
+                            valoraPagar.innerHTML=ticket1.valorPagar
+                            valoraPagar.innerHTML+=' dólares'
+                        }
+                    })
+                })
+
+
+                if(vehiculo1.facturada==true){
+                    facturar.innerHTML += `<button name="btnFacturar" id="${vehiculo1.id}" class="btn btn-warning" onclick="facturar(${vehiculo1.id})">Ver ticket</button>`;
+
+                }else {
+
+                    facturar.innerHTML += `<button name="btnFacturar" id="${vehiculo1.id}" class="btn btn-success" onclick="facturar(${vehiculo1.id})">Facturar</button>`;
+                }
+                acciones.innerHTML=`<button name="btnEliminar" id="${vehiculo1.id}" class="btn btn-danger" onclick="eliminar(${vehiculo1.id})">Eliminar</button>`;
+            }
+
+        })
+    })
+
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container text-center">
+<h1>{{ titulo }}</h1>
+<div class="row justify-content-center">
+    <div class="container text-right">
+     <a type="button" class="btn btn-primary" href={% url 'create_plaza' %}>Ingresar nuevo</a>
+    </div>
+    <div class="col-12">
+        <table class="table table-bordered table-striped table-hover  table-sm table-secondary">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody >
+                {% for foo in plazas %}
+                    {% if foo.activo == True %}
+                    <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{foo.descripcion_plaza}}</td>
+                    {% if foo.estado_plaza == True %}
+                        <td>Disponible</td>
+                    {% else %}
+                        <td>Ocupado</td>
+                    {% endif %}
+                    <td> <button name="btneliminar" id="{{ foo.id }}" class="btn btn-danger">Eliminar</button></td>
+
+                    </tr>
+                    {% endif %}
+
+                {% endfor %}
+
+                <!--template tags que usa django... el profesor1 es el mismo que utilizamos en el view-->
+                </tbody>
+
+
+        </table>
+
+    </div>
+</div>
+</div>
+    <script>
+    const botonEliminar=document.getElementsByName('btneliminar');
+    botonEliminar.forEach(object =>{
+        object.addEventListener('click',(event)=>{
+            console.log(event.target.id)
+            fetch(`http://127.0.0.1:8000/api/v1/plazas/${event.target.id}/`,{
+                method:'GET'
+            })
+            .then(res => {
+                console.log(res)
+                return res.json()
+            }).then(data=>{
+                console.log('DATA ',data)
+                fetch(`http://127.0.0.1:8000/api/v1/plazas/${event.target.id}/`,{
+                method:'PUT',
+                body:JSON.stringify({
+
+                    codigoPlaza:data.codigoPlaza,
+                    descripcionPlaza:data.descripcionPlaza,
+                    estadoPlaza:data.estadoPlaza,
+                    activo:'false'
+                }),
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            }).then(res=>{
+                if (res.ok){
+                    window.location.reload();
+                }
+
+                })
+
+        })
+
+    })
+    });
+
+    </script>
+
+{% endblock %}

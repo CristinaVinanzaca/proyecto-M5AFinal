@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block body %}
+    <form>
+    <div class="container text-center">
+        <h1>{{ titulo }}</h1>
+        <div class="form-group" class="col-sm-2 col-form-label">
+            <div class="container text-left">
+                <label for="placa">Placa del vehículo:</label>
+            <input type="text" class="form-control" placeholder="Placa vehicular" id="placa">
+            </div>
+            <div class="container text-left">
+                <label for="descripcion">Identificación del propietario</label>
+                <hr>
+            <label><input type="checkbox" id="consumidorFinal"> Consumidor final</label><br>
+                <hr>
+            </div>
+                <div class="container text-left">
+                <label for="estado">Plaza Usada:</label>
+
+
+                <select id="estado" class="form-control" name="plazas">
+                    <option value="Seleccionar..">Seleccionar...</option>
+                    {% for foo in plazas_list %}
+                        {% if foo.activo == True %}
+                            {% if foo.estado_plaza == True %}
+                              <option value="{{ foo.id }}" name="plaza1">{{ foo.descripcion_plaza }}</option>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                </div>
+
+                <div class="container text-left">
+                <label for="estado">Tipo de vehiculo: </label>
+
+
+                <select id="tvehi" class="form-control">
+                    <option value="Seleccionar..">Seleccionar...</option>
+                    {% for foo in tVehiculos %}
+                        {% if foo.activo == True %}
+                            <option value="{{ foo.id }}">{{ foo.descripcion}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                </div>
+
+
+            <div style="text-align: center;"><button type="submit" class="btn btn-primary" id="guardar" >Registrar</button></div>
+        </div>
+    </div>
+    </form>
+    <script>
+    const plazas=document.getElementById('estado');
+    const tipoVehi=document.getElementById('tvehi');
+    const placaVehiculo=document.getElementById('placa');
+    const propietario=document.getElementById('propietario');
+    const consumidorFinal=document.getElementById('consumidorFinal')
+    const botonGuardar=document.getElementById('guardar');
+    var id_propietario;
+
+    tipoVehi.addEventListener("change", event=>{
+      console.log(tipoVehi.value);
+
+    })
+    plazas.addEventListener("change", event=> {
+        console.log(plazas.value);
+    })
+
+    botonGuardar.addEventListener('click',event =>{
+        if (consumidorFinal.checked)
+        {
+            console.log('seleccionado')
+            id_propietario="13";
+
+        }
+        else{
+            var cadena='http://127.0.0.1:8000/api/v1/Cliente/';
+            fetch(cadena).then(res=>res.json()).then(cliente => {
+                cliente.forEach((cliente1,index)=>{
+                  if (cliente1.idCliente== propietario.value){
+                      id_propietario=cliente1.id
+                  }
+                  else {
+                      console.log('propietario inexistente')
+                  }
+
+                })
+
+
+            })
+        }
+        const plazaUsada1=plazas.value;
+        const tipovehiculo1=tipoVehi.value;
+        console.log('PLAZAS ',plazas.value);
+        console.log('TVEHICULOS:  ',tipoVehi.value)
+         fetch('http://127.0.0.1:8000/api/v1/Vehiculo/', {
+        method: 'POST',
+        body:JSON.stringify({
+            idPlacaVehiculo:placaVehiculo.value,
+            idPropietario:id_propietario,
+            tipoVehiculo:tipovehiculo1,
+            plazaUsada:plazaUsada1
+        }),
+        headers:{
+            'Content-Type':'application/json'
+        }
+        })
+
+        fetch(`http://127.0.0.1:8000/api/v1/plazas/${plazaUsada1}/`,{
+                method:'GET'
+            })
+            .then(res => {
+                console.log(res)
+                return res.json()
+            }).then(data=>{
+                console.log('DATA ',data)
+                fetch(`http://127.0.0.1:8000/api/v1/plazas/${plazaUsada1}/`,{
+                method:'PUT',
+                body:JSON.stringify({
+
+                    codigoPlaza:data.codigoPlaza,
+                    descripcionPlaza:data.descripcionPlaza,
+                    estadoPlaza:'false',
+                    activo:'true'
+                }),
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            })
+
+        })
+
+     window.alert('Registrado correctamente!')
+
+    })
+
+    //trabajar con fechas
+   /* var hoy=new Date();
+    var hora=hoy.toISOString();
+    var horsAnterior=new Date ('Sat Apr 18 2020 18:08:19 GMT-0500 (hora de verano central)');
+    console.log(horsAnterior)
+    console.log(hoy.toLocaleTimeString());
+    console.log((horsAnterior.getTime()-hoy.getTime())/60000);
+    console.log(consumidorFinal.value);*/
+
+
+
+    </script>
+{% endblock %}

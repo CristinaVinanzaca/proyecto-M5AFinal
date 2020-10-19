@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block body %}
+    <form>
+    <div class="container text-center">
+        <h1>{{ titulo }}</h1>
+        <div class="form-group" class="col-sm-2 col-form-label">
+            <div class="container text-left">
+                <label for="codigo">Código de plaza</label></div>
+            <input type="text" class="form-control" placeholder="codigo" id="codigo">
+            <div class="container text-left">
+                <label for="descripcion">Descripción</label></div>
+            <input type="text" class="form-control" placeholder="descripcion" id="descripcion">
+            <div class="form-group">
+                <div class="container text-left">
+                <label for="estado">Estado:</label>
+                </div>
+                <select id="estado" class="form-control">
+                    <option>Seleccionar....</option>
+                    <option>Ocupado</option>
+                    <option>Desocupado</option>
+                </select>
+            </div>
+            <div style="text-align: center;"><button type="submit" class="btn btn-primary" id="guardar" >Registrar</button></div>
+        </div>
+    </div>
+    </form>
+    <script>
+    const boton=document.getElementById('guardar');
+    const estado=document.getElementById('estado');
+    const codPlaza=document.getElementById('codigo');
+    const descriPlaza=document.getElementById('descripcion');
+
+    boton.addEventListener('click',() =>{
+        let estado1=true;
+        if (estado.value == 'Seleccionar....'){
+            estado1=true;
+        }
+         else if (estado.value == 'OCUPADO'){
+            estado1=false;
+        }
+        else{
+            estado1=true;
+        }
+         fetch('http://127.0.0.1:8000/api/v1/plazas/', {
+        method: 'POST',
+        body:JSON.stringify({
+            codigoPlaza:codPlaza.value,
+            descripcionPlaza:descriPlaza.value,
+            estadoPlaza:estado1
+        }),
+        headers:{
+            'Content-Type':'application/json'
+        }
+        })
+
+
+
+    })
+
+    </script>
+{% endblock %}

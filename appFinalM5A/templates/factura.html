@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container text-center">
+    <div class="alert alert-dark" role="alert">
+        <h1 class="text-center text-info">PARKINGK THE ONE<hr></h1>
+    </div>
+        <div class="alert alert-info" role="alert" id="información">
+             <div class="container text-left">
+                 <label><h5>Fecha de emisión:</h5></label>  <label >  {{ ticket.fecha_emision }}</label>
+                 <hr>
+                 <label name="id1" id="{{ ticket.vehiculos }}"><h5>Valor a pagar:</h5></label>  <label >  {{ ticket.valor_pagar }} dólares</label>
+             </div>
+
+
+        </div>
+    <div class="alert alert-dark" role="alert">
+    ¡Gracias por visitarnos!
+    </div>
+    </div>
+    <script >
+
+
+    </script>
+{% endblock %}

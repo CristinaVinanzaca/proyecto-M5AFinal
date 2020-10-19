@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<div class="container text-center">
+<h1>{{ titulo }}</h1>
+<div class="row justify-content-center">
+    <div class="container text-right">
+     <a type="button" class="btn btn-primary" href={% url 'create_cliente' %}>Ingresar nuevo</a>
+    </div>
+
+    <div class="col-12">
+        <table class="table table-bordered table-striped table-hover table-sm table-secondary">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Identificación</th>
+                    <th>Nombre</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Acciones</th>
+
+
+
+                </tr>
+                </thead>
+                <tbody >
+                {% for foo in clientesList %}
+                    {% if foo.activo == True %}
+                    <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ foo.id_cliente }}</td>
+                    <td>{{foo.nombre_completo}}</td>
+                    <td>{{foo.direccion}}</td>
+                    <td>{{foo.telefono}}</td>
+                    <td> <button name="btneliminar" id="{{ foo.id }}" class="btn btn-danger">Eliminar</button></td>
+                    {% endif %}
+
+                {% endfor %}
+
+                <!--template tags que usa django... el profesor1 es el mismo que utilizamos en el view-->
+                </tbody>
+
+
+        </table>
+
+    </div>
+</div>
+</div>
+    <script>
+    const botonEliminar=document.getElementsByName('btneliminar');
+    botonEliminar.forEach(object =>{
+        object.addEventListener('click',(event)=>{
+            console.log(event.target.id)
+            fetch(`http://127.0.0.1:8000/api/v1/Cliente/${event.target.id}/`,{
+                method:'GET'
+            })
+            .then(res => {
+                console.log(res)
+                return res.json()
+            }).then(data=>{
+                console.log('DATA ',data)
+                fetch(`http://127.0.0.1:8000/api/v1/Cliente/${event.target.id}/`,{
+                method:'PUT',
+                body:JSON.stringify({
+
+                    idCliente:data.idCliente,
+                    nombreCompleto:data.nombreCompleto,
+                    direccion:data.direccion,
+                    telefono:data.telefono,
+                    activo:'false'
+                }),
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            }).then(res=>{
+                if (res.ok){
+                    window.location.reload();
+                }
+
+                })
+
+        })
+
+    })
+    });
+
+    </script>
+
+{% endblock %}

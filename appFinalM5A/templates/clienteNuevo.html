@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block body %}
+    <form>
+    <div class="container text-center">
+        <h1>{{ titulo }}</h1>
+        <div class="form-group" class="col-sm-2 col-form-label">
+            <div class="container text-left">
+                <label for="identificación">Identificación</label></div>
+            <input type="text" class="form-control" placeholder="identificación" id="identificación">
+            <div class="container text-left">
+                <label for="nombre_completo">Nombre Completo</label></div>
+            <input type="text" class="form-control" placeholder="nombre_completo" id="nombre_completo">
+            <div class="container text-left">
+                <label for="dirección">Dirección</label></div>
+            <input type="text" class="form-control" placeholder="dirección" id="dirección">
+            <div class="container text-left">
+                <label for="teléfono">Teléfono</label></div>
+            <input type="text" class="form-control" placeholder="teléfono" id="teléfono">
+            <br>
+            <div style="text-align: center;"><button type="submit" class="btn btn-primary" id="guardar" >Registrar</button></div>
+        </div>
+    </div>
+    </form>
+<script>
+ const identificacion=document.getElementById('identificación');
+ const nombre=document.getElementById('nombre_completo');
+ const direction=document.getElementById('dirección');
+ const telefono=document.getElementById('teléfono');
+ const boton=document.getElementById('guardar');
+ let tieneErrores = false;
+boton.addEventListener('click',() => {
+    fetch('http://127.0.0.1:8000/api/v1/Cliente/', {
+        method: 'POST',
+        body:JSON.stringify({
+            idCliente:identificacion.value,
+            nombreCompleto:nombre.value,
+            direccion:direction.value,
+            telefono:telefono.value
+        }),
+        headers:{
+            'Content-Type':'application/json'
+
+        }
+
+    })
+        .then(res => {
+            console.log(res)
+            if (res.status == 400) tieneErrores = true;
+            console.log('RES: ', res)
+            return res.json()
+        })
+        .then(data => {
+            if (tieneErrores) {
+                alert('Revise el formulario')
+            } else{
+                window.location.href='clientes1'
+            }
+        })
+})
+
+
+
+</script>
+
+{% endblock %}

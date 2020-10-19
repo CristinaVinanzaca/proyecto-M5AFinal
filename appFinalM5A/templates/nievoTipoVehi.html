@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block body %}
+    <form>
+    <div class="container text-center">
+        <h1>{{ titulo }}</h1>
+        <div class="form-group" class="col-sm-2 col-form-label">
+            <div class="container text-left">
+                <label for="codigo">Código</label></div>
+            <input type="text" class="form-control" placeholder="codigo" id="codigo">
+            <div class="container text-left">
+                <label for="descripcion">Descripción</label></div>
+            <input type="text" class="form-control" placeholder="descripcion" id="descripcion">
+            <div style="text-align: center;"><button type="submit" class="btn btn-primary" id="guardar" >Registrar</button></div>
+        </div>
+    </div>
+    </form>
+    <script>
+    const boton=document.getElementById('guardar');
+    const codrol=document.getElementById('codigo');
+    const descrirol=document.getElementById('descripcion');
+
+    boton.addEventListener('click',() =>{
+         fetch('http://127.0.0.1:8000/api/v1/TipoVehi/', {
+        method: 'POST',
+        body:JSON.stringify({
+            codigo_tipo:codrol.value,
+            descripcion:descrirol.value
+        }),
+        headers:{
+            'Content-Type':'application/json'
+        }
+        })
+
+
+
+    })
+
+    </script>
+{% endblock %}
